@@ -1,0 +1,1914 @@
+@charset "UTF-8";
+
+/* ==========================================================================
+   YETI LINUX — hoja de estilos única
+   Tema del sitio: Yeti / Yeti Linux
+   Sistema operativo educativo inmutable basado en NixOS y KDE Plasma 6.
+
+   Estrategia: Mobile-First. Los estilos base describen la vista estrecha y
+   los tres bloques de media queries del final (480px, 768px, 1024px) sólo
+   añaden lo que el espacio extra permite.
+
+   Índice
+   ---------------------------------------------------------------------------
+   01. Reset moderno
+   02. Tokens de diseño (:root)
+   03. Base y elementos
+   04. Utilidades
+   05. Cabecera y navegación (checkbox-hack)
+   06. Botones y píldoras
+   07. Hero, ventana de código y divisor glaciar
+   08. Modal CSS-only (:target)
+   09. Sobre nosotros
+   10. Servicios (<details> / <summary>)
+   11. Testimonios (CSS Scroll Snapping)
+   12. Contacto: alerta :target y formulario
+   13. Pie de página
+   14. Foco visible y preferencias del usuario
+   15. Media queries — 480px / 768px / 1024px
+   ========================================================================== */
+
+
+/* ==========================================================================
+   01. RESET MODERNO
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+
+  /* Navegación fluida entre anclas. Se anula en prefers-reduced-motion (§14) */
+  scroll-behavior: smooth;
+
+  /* La cabecera es sticky: reserva su altura para que los títulos no queden
+     escondidos debajo al saltar a un ancla. */
+  scroll-padding-top: calc(var(--alto-cabecera) + 1.5rem);
+}
+
+body {
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img,
+svg,
+picture,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  background: none;
+  border: 0;
+}
+
+h1,
+h2,
+h3,
+p,
+li,
+blockquote,
+figcaption {
+  overflow-wrap: break-word;
+}
+
+ul[class],
+ol[class] {
+  list-style: none;
+  padding: 0;
+}
+
+a {
+  /* Sin color global: cada componente de enlace declara el suyo, lo que evita
+     guerras de especificidad entre bandas claras y oscuras. */
+  color: inherit;
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.18em;
+}
+
+
+/* ==========================================================================
+   02. TOKENS DE DISEÑO
+   ========================================================================== */
+
+:root {
+
+  /* --- Paleta del encargo ------------------------------------------------
+     REGLA DE CONTRASTE (WCAG 2.1 AA, mínimo 4.5:1 en texto).
+     El azul glacial #0284C7 NO alcanza 4.5:1 con texto blanco encima
+     (4.09:1) ni funciona como color de texto sobre blanco (4.09:1) o sobre
+     el oscuro profundo (4.36:1). Por eso se conserva como color primario de
+     marca —superficies, bordes, iconos y degradados, donde basta 3:1— y se
+     derivan dos tonos más profundos del mismo azul para lo que sí lleva
+     texto encima. Cada token indica su ratio real.
+     ---------------------------------------------------------------------- */
+  --color-primario: #0284C7;
+  /* azul glacial: decoración, bordes, iconos */
+  --color-primario-fuerte: #0369A1;
+  /* texto blanco encima → 5.93:1 ✓ ; como texto sobre blanco → 5.93:1 ✓ */
+  --color-primario-mas: #075985;
+  /* hover y texto de código → 7.56:1 sobre blanco ✓ */
+  --color-secundario: #0F172A;
+  /* oscuro profundo: bandas oscuras y texto sobre claro → 17.85:1 ✓ */
+  --color-acento: #38BDF8;
+  /* cián: texto SOBRE OSCURO → 8.34:1 ✓ ; nunca como texto sobre blanco (2.14:1 ✗) */
+
+  /* --- Neutros y superficies --------------------------------------------- */
+  --superficie: #FFFFFF;
+  --superficie-hundida: #F1F5F9;
+  --superficie-seccion: #F8FAFC;
+  --superficie-codigo: #0B1424;
+  --borde: #E2E8F0;
+  --borde-fuerte: #CBD5E1;
+  --borde-oscuro: rgba(148, 163, 184, 0.18);
+  --velo-claro: rgba(248, 250, 252, 0.06);
+
+  /* --- Texto sobre fondo CLARO ------------------------------------------- */
+  --tinta-fuerte: #0F172A;
+  /* 17.85:1 ✓ */
+  --tinta-media: #475569;
+  /* 7.58:1 ✓ */
+  --tinta-suave: #64748B;
+  /* 4.76:1 ✓ (mínimo admisible: placeholders y notas) */
+
+  /* --- Texto sobre fondo OSCURO (#0F172A) -------------------------------- */
+  --nieve-fuerte: #F8FAFC;
+  /* 17.4:1 ✓ */
+  --nieve-media: #CBD5E1;
+  /* 12.4:1 ✓ */
+  --nieve-suave: #94A3B8;
+  /* 6.96:1 ✓ */
+
+  /* --- Estados ----------------------------------------------------------- */
+  --color-exito: #047857;
+  /* sobre #ECFDF5 → 5.20:1 ✓ */
+  --color-exito-texto: #065F46;
+  /* sobre #ECFDF5 → 7.29:1 ✓ */
+  --superficie-exito: #ECFDF5;
+  --color-error: #B91C1C;
+  /* sobre blanco → 6.47:1 ✓ */
+  --superficie-error: #FEF2F2;
+
+  /* Color del anillo de foco. Se reasigna en las bandas oscuras (§14) para
+     mantener siempre ≥3:1 contra el fondo que tiene detrás. */
+  --anillo: var(--color-primario-fuerte);
+
+  /* --- Tipografía --------------------------------------------------------
+     Inter llega por <link> a Google Fonts. La cadena de reserva mantiene el
+     diseño si no hay red (el prototipo debe abrirse desde file://). */
+  --fuente: "Inter", system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --fuente-mono: ui-monospace, "Cascadia Mono", "Cascadia Code", Consolas,
+    "SFMono-Regular", "Liberation Mono", monospace;
+
+  --txt-h1: clamp(2.6rem, 1.55rem + 5vw, 4.5rem);
+  --txt-h2: clamp(1.75rem, 1.2rem + 2.3vw, 2.6rem);
+  --txt-h3: clamp(1.08rem, 0.98rem + 0.5vw, 1.25rem);
+  --txt-lead: clamp(1.02rem, 0.96rem + 0.35vw, 1.18rem);
+
+  /* --- Espaciado (escala de 8px con dos pasos finos) --------------------- */
+  --esp-1: 0.25rem;
+  --esp-2: 0.5rem;
+  --esp-3: 0.75rem;
+  --esp-4: 1rem;
+  --esp-5: 1.5rem;
+  --esp-6: 2rem;
+  --esp-7: 2.5rem;
+  --esp-8: 3rem;
+  --esp-9: 4rem;
+  --esp-10: 5rem;
+  --esp-11: 6rem;
+
+  /* --- Formas, sombras y ritmo ------------------------------------------- */
+  --radio-sm: 0.5rem;
+  --radio-md: 0.75rem;
+  --radio-lg: 1.15rem;
+  --radio-full: 999px;
+
+  --sombra-sm: 0 1px 2px rgba(15, 23, 42, 0.05),
+    0 4px 12px -6px rgba(15, 23, 42, 0.08);
+  --sombra-md: 0 10px 30px -12px rgba(15, 23, 42, 0.18),
+    0 2px 6px rgba(15, 23, 42, 0.05);
+  --sombra-lg: 0 32px 64px -24px rgba(15, 23, 42, 0.3);
+  --sombra-oscura: 0 30px 60px -20px rgba(2, 8, 23, 0.85);
+
+  --contenedor: 75rem;
+  /* 1200px */
+  /* Un único valor para el margen lateral del contenedor: los elementos
+     posicionados en absoluto lo reutilizan, porque se sitúan respecto al
+     padding box y de otro modo se pegarían al borde de la pantalla. */
+  --pad-contenedor: clamp(1rem, 4vw, 2rem);
+  --alto-cabecera: 4.5rem;
+  --transicion: 180ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Área táctil mínima recomendada (WCAG 2.5.5) */
+  --toque: 2.75rem;
+}
+
+
+/* ==========================================================================
+   03. BASE Y ELEMENTOS
+   ========================================================================== */
+
+body {
+  font-family: var(--fuente);
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--tinta-fuerte);
+  background: var(--superficie);
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+  color: var(--tinta-fuerte);
+}
+
+strong {
+  font-weight: 600;
+  color: var(--tinta-fuerte);
+}
+
+code {
+  font-family: var(--fuente-mono);
+  font-size: 0.88em;
+  padding: 0.08em 0.28em;
+  border-radius: 0.3rem;
+  background: rgba(2, 132, 199, 0.1);
+  color: var(--color-primario-mas);
+}
+
+::selection {
+  background: var(--color-acento);
+  color: var(--color-secundario);
+}
+
+/* Secciones: ritmo vertical común y las dos variantes de banda ------------- */
+
+.seccion {
+  padding-block: clamp(3.5rem, 8vw, 6rem);
+}
+
+.seccion--gris {
+  background: var(--superficie-seccion);
+}
+
+.seccion--oscura {
+  background: var(--color-secundario);
+  color: var(--nieve-media);
+  /* En banda oscura el anillo de foco pasa al cián: 8.34:1 contra el fondo */
+  --anillo: var(--color-acento);
+}
+
+.seccion--oscura h1,
+.seccion--oscura h2,
+.seccion--oscura h3,
+.seccion--oscura strong {
+  color: var(--nieve-fuerte);
+}
+
+.seccion--oscura code {
+  background: rgba(56, 189, 248, 0.14);
+  color: var(--color-acento);
+}
+
+.seccion__encabezado {
+  max-width: 60ch;
+}
+
+.seccion__titulo {
+  font-size: var(--txt-h2);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.seccion__entradilla {
+  margin-top: var(--esp-4);
+  font-size: var(--txt-lead);
+  line-height: 1.7;
+  color: var(--tinta-media);
+}
+
+.seccion__entradilla--clara {
+  color: var(--nieve-media);
+}
+
+.eyebrow {
+  margin-bottom: var(--esp-3);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--color-primario-fuerte);
+}
+
+.eyebrow--claro {
+  color: var(--color-acento);
+}
+
+.parrafo {
+  margin-top: var(--esp-4);
+  line-height: 1.8;
+  color: var(--tinta-media);
+}
+
+.parrafo--destacado {
+  font-size: var(--txt-lead);
+  color: var(--tinta-fuerte);
+}
+
+
+/* ==========================================================================
+   04. UTILIDADES
+   ========================================================================== */
+
+.contenedor {
+  width: 100%;
+  max-width: var(--contenedor);
+  margin-inline: auto;
+  padding-inline: var(--pad-contenedor);
+}
+
+/* Visible sólo para tecnologías de asistencia */
+.solo-lectores {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Enlace de salto: aparece al recibir el foco de teclado */
+.salto-contenido {
+  position: fixed;
+  top: -6rem;
+  left: 1rem;
+  z-index: 200;
+  padding: 0.8rem 1.2rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-secundario);
+  background: var(--color-acento);
+  border-radius: var(--radio-sm);
+  box-shadow: var(--sombra-lg);
+  text-decoration: none;
+  transition: top var(--transicion);
+}
+
+.salto-contenido:focus {
+  top: 1rem;
+}
+
+/* Lista con palomita — el marcador se dibuja con texto, sin imágenes */
+.lista-check {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: var(--esp-5);
+}
+
+.lista-check li {
+  position: relative;
+  padding-left: 2.1rem;
+  line-height: 1.65;
+  color: var(--tinta-media);
+}
+
+.lista-check li::before {
+  content: "✓";
+  position: absolute;
+  top: 0.15em;
+  left: 0;
+  display: grid;
+  place-items: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+  color: #FFFFFF;
+  background: var(--color-primario-fuerte);
+  border-radius: 50%;
+}
+
+/* Texto alternativo vacío para que el lector de pantalla no lea "marca de
+   verificación" en cada elemento. Se aísla en @supports porque un navegador
+   sin soporte invalidaría toda la declaración y perdería el marcador. */
+@supports (content: "x" / "y") {
+  .lista-check li::before {
+    content: "✓" / "";
+  }
+}
+
+.lista-check--compacta {
+  margin-top: var(--esp-2);
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+
+/* ==========================================================================
+   05. CABECERA Y NAVEGACIÓN
+   El estado del menú móvil vive en #nav-toggle (checkbox-hack). El input NO
+   se oculta con display:none, porque eso lo sacaría del orden de tabulación:
+   se superpone al botón con opacity:0 y área de 44x44px, de modo que
+   funciona con ratón, toque y teclado (Tab + Espacio) de forma nativa.
+   ========================================================================== */
+
+.cabecera {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  color: var(--nieve-media);
+  background: rgba(15, 23, 42, 0.94);
+  border-bottom: 1px solid var(--borde-oscuro);
+  -webkit-backdrop-filter: blur(10px) saturate(160%);
+  backdrop-filter: blur(10px) saturate(160%);
+  --anillo: var(--color-acento);
+}
+
+.cabecera__fila {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--esp-4);
+  min-height: var(--alto-cabecera);
+}
+
+/* --- Marca ---------------------------------------------------------------- */
+
+.marca {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  /* Lleva el destino de pulsación del logotipo a 44px de alto */
+  padding-block: 0.25rem;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  color: var(--nieve-fuerte);
+  text-decoration: none;
+}
+
+.marca__icono {
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: 0 0 auto;
+}
+
+.marca__texto {
+  font-size: 1.05rem;
+}
+
+/* --- Control del menú (checkbox + etiqueta visual) ----------------------- */
+
+.nav__estado {
+  position: absolute;
+  top: 50%;
+  right: var(--pad-contenedor);
+  z-index: 30;
+  width: var(--toque);
+  height: var(--toque);
+  margin: 0;
+  transform: translateY(-50%);
+  opacity: 0;
+  cursor: pointer;
+}
+
+.nav__boton {
+  position: absolute;
+  top: 50%;
+  right: var(--pad-contenedor);
+  z-index: 26;
+  display: grid;
+  place-items: center;
+  width: var(--toque);
+  height: var(--toque);
+  color: var(--nieve-fuerte);
+  border: 1px solid var(--borde-oscuro);
+  border-radius: var(--radio-sm);
+  background: var(--velo-claro);
+  transform: translateY(-50%);
+}
+
+/* Tres barras dibujadas con un span y sus dos pseudoelementos */
+.nav__barras {
+  position: relative;
+  display: block;
+  width: 1.35rem;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  transition: background-color var(--transicion);
+}
+
+.nav__barras::before,
+.nav__barras::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  transition: transform var(--transicion), top var(--transicion);
+}
+
+.nav__barras::before {
+  top: -0.44rem;
+}
+
+.nav__barras::after {
+  top: 0.44rem;
+}
+
+/* Abierto: la barra central desaparece y las otras dos forman una X */
+.nav__estado:checked ~ .nav__boton .nav__barras {
+  background: transparent;
+}
+
+.nav__estado:checked ~ .nav__boton .nav__barras::before {
+  top: 0;
+  transform: rotate(45deg);
+}
+
+.nav__estado:checked ~ .nav__boton .nav__barras::after {
+  top: 0;
+  transform: rotate(-45deg);
+}
+
+/* El input es invisible: su foco se dibuja sobre el botón visible */
+.nav__estado:focus-visible ~ .nav__boton {
+  outline: 3px solid var(--anillo);
+  outline-offset: 3px;
+}
+
+/* Capa de cierre: permite plegar el menú tocando fuera del panel.
+   Va en position:absolute y no fixed a propósito: el backdrop-filter de
+   .cabecera la convierte en bloque contenedor de sus descendientes fijos, de
+   modo que un inset:… 0 0 se resolvería contra los 72px de la cabecera y el
+   velo quedaría con altura cero. Anclado a .cabecera__fila y con alto de
+   viewport, cubre la pantalla y acompaña a la cabecera sticky al desplazarse. */
+.nav__fondo {
+  display: none;
+}
+
+.nav__estado:checked ~ .nav__fondo {
+  display: block;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: 0;
+  z-index: 20;
+  height: 100vh;
+  background: rgba(2, 8, 23, 0.6);
+}
+
+@supports (height: 100dvh) {
+  .nav__estado:checked ~ .nav__fondo {
+    height: 100dvh;
+  }
+}
+
+/* --- Panel de navegación ------------------------------------------------- */
+
+.nav {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: 0;
+  z-index: 25;
+  max-height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  background: var(--color-secundario);
+  border-bottom: 1px solid var(--borde-oscuro);
+  box-shadow: var(--sombra-lg);
+  transition: max-height var(--transicion), visibility var(--transicion);
+}
+
+.nav__estado:checked ~ .nav {
+  max-height: 24rem;
+  visibility: visible;
+}
+
+.nav__lista {
+  display: grid;
+  gap: 0.15rem;
+  padding: var(--esp-3);
+  margin: 0;
+}
+
+.nav__enlace {
+  display: block;
+  padding: 0.75rem 1rem;
+  font-size: 0.94rem;
+  font-weight: 500;
+  color: var(--nieve-media);
+  text-decoration: none;
+  border-radius: var(--radio-sm);
+  transition: color var(--transicion), background-color var(--transicion);
+}
+
+.nav__enlace:hover {
+  color: var(--nieve-fuerte);
+  background: var(--velo-claro);
+}
+
+/* Sección activa: no se señala sólo con color, también con una barra */
+.nav__enlace[aria-current="page"] {
+  font-weight: 600;
+  color: var(--color-acento);
+}
+
+.nav__enlace[aria-current="page"]::after {
+  content: "";
+  display: block;
+  height: 2px;
+  margin-top: 0.3rem;
+  border-radius: 2px;
+  background: var(--color-acento);
+}
+
+
+/* ==========================================================================
+   06. BOTONES Y PÍLDORAS
+   ========================================================================== */
+
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: var(--toque);
+  padding: 0.8rem 1.4rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: var(--radio-md);
+  transition: background-color var(--transicion), border-color var(--transicion),
+    transform var(--transicion), box-shadow var(--transicion);
+}
+
+.boton:hover {
+  transform: translateY(-1px);
+}
+
+.boton:active {
+  transform: translateY(0);
+}
+
+.boton--primario {
+  color: #FFFFFF;
+  background: var(--color-primario-fuerte);
+  box-shadow: 0 12px 26px -14px rgba(3, 105, 161, 0.9);
+}
+
+.boton--primario:hover {
+  background: var(--color-primario-mas);
+}
+
+.boton--fantasma {
+  color: var(--nieve-fuerte);
+  background: var(--velo-claro);
+  border-color: rgba(148, 163, 184, 0.45);
+}
+
+.boton--fantasma:hover {
+  background: rgba(248, 250, 252, 0.12);
+  border-color: var(--color-acento);
+}
+
+.boton--bloque {
+  width: 100%;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-acento);
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: var(--radio-full);
+}
+
+.chip__punto {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--color-acento);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.22);
+}
+
+
+/* ==========================================================================
+   07. HERO, VENTANA DE CÓDIGO Y DIVISOR GLACIAR
+   ========================================================================== */
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding-top: clamp(3rem, 8vw, 5rem);
+  padding-bottom: clamp(6.5rem, 16vw, 11rem);
+  background:
+    radial-gradient(58rem 34rem at 82% -12%, rgba(56, 189, 248, 0.2), transparent 62%),
+    radial-gradient(46rem 28rem at 4% 6%, rgba(2, 132, 199, 0.24), transparent 64%),
+    var(--color-secundario);
+}
+
+.hero__reja {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: var(--esp-9);
+}
+
+.hero__titulo {
+  margin-top: var(--esp-5);
+  font-size: var(--txt-h1);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+  color: var(--nieve-fuerte);
+}
+
+/* Subtítulo obligatorio del encargo: «Sitio web sobre Yeti Linux» */
+.hero__subtitulo {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: var(--esp-4);
+  font-size: var(--txt-lead);
+  font-weight: 600;
+  color: var(--color-acento);
+}
+
+.hero__subtitulo::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 2rem;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--color-acento);
+}
+
+.hero__descripcion {
+  max-width: 46ch;
+  margin-top: var(--esp-5);
+  font-size: var(--txt-lead);
+  line-height: 1.75;
+  color: var(--nieve-media);
+}
+
+.hero__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--esp-4);
+  margin-top: var(--esp-7);
+}
+
+.hero__acciones .boton {
+  flex: 1 1 14rem;
+}
+
+/* --- Franja de datos ----------------------------------------------------- */
+
+.datos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+  gap: var(--esp-5);
+  margin-top: var(--esp-8);
+  padding-top: var(--esp-6);
+  border-top: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+.datos__cifra {
+  font-size: clamp(1.4rem, 1.1rem + 1.2vw, 1.75rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--color-acento);
+}
+
+.datos__etiqueta {
+  margin: 0.2rem 0 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--nieve-suave);
+}
+
+/* --- Ventana con la configuración declarativa ---------------------------- */
+
+.ventana {
+  overflow: hidden;
+  background: var(--superficie-codigo);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  border-radius: var(--radio-lg);
+  box-shadow: var(--sombra-oscura);
+}
+
+.ventana__barra {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.7rem 0.9rem;
+  background: rgba(148, 163, 184, 0.1);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.ventana__semaforo {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: rgba(148, 163, 184, 0.45);
+}
+
+.ventana__ruta {
+  margin-left: 0.6rem;
+  font-family: var(--fuente-mono);
+  font-size: 0.72rem;
+  color: var(--nieve-suave);
+}
+
+.ventana__codigo {
+  padding: var(--esp-5) 1.25rem;
+  /* El código es contenido que necesita su propia disposición: si no cabe,
+     desplaza dentro de su caja y nunca arrastra la página (WCAG 1.4.10).
+     El tamaño máximo está calculado para que la línea más larga entre sin
+     barra en la columna del hero a partir de 1024px. */
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  font-family: var(--fuente-mono);
+  font-size: clamp(0.7rem, 0.58rem + 0.5vw, 0.8rem);
+  line-height: 1.75;
+  color: #E2E8F0;
+  tab-size: 2;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(56, 189, 248, 0.55) rgba(148, 163, 184, 0.16);
+}
+
+.ventana__codigo::-webkit-scrollbar {
+  height: 0.4rem;
+}
+
+.ventana__codigo::-webkit-scrollbar-track {
+  background: rgba(148, 163, 184, 0.16);
+}
+
+.ventana__codigo::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.55);
+  border-radius: var(--radio-full);
+}
+
+/* Dentro del bloque de código, <code> no lleva la píldora de §03 */
+.ventana__codigo code {
+  padding: 0;
+  font-size: inherit;
+  color: inherit;
+  background: none;
+}
+
+/* Coloreado manual, todo dentro de la escala azul de la marca.
+   Ratios sobre #0B1424: comentarios 7.2:1 ✓ · cadenas 11.1:1 ✓ · valores 17:1 ✓ */
+.tk-com {
+  color: #94A3B8;
+  font-style: italic;
+}
+
+.tk-str {
+  color: #7DD3FC;
+}
+
+.tk-val {
+  color: #F8FAFC;
+  font-weight: 600;
+}
+
+.ventana__pie {
+  padding: 0.85rem var(--esp-5) 1.1rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--nieve-suave);
+  border-top: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+/* --- Divisor: cresta glaciar hacia la banda clara siguiente -------------- */
+
+.divisor {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  line-height: 0;
+  /* currentColor toma el color de la sección que viene a continuación */
+  color: var(--superficie);
+}
+
+.divisor__svg {
+  display: block;
+  width: 100%;
+  height: clamp(3.5rem, 8vw, 6.5rem);
+}
+
+.divisor__frente {
+  fill: currentColor;
+}
+
+.divisor__tras {
+  fill: currentColor;
+  opacity: 0.32;
+}
+
+
+/* ==========================================================================
+   08. MODAL CSS-ONLY (:target)
+   display:none mientras está cerrado — decisión deliberada: así el contenido
+   queda fuera del orden de tabulación y del árbol de accesibilidad. Sin JS no
+   hay retención de foco ni cierre con Escape (documentado en el HTML).
+   ========================================================================== */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: none;
+  place-items: center;
+  padding: var(--esp-4);
+}
+
+.modal:target {
+  display: grid;
+}
+
+.modal__fondo {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 8, 23, 0.78);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+
+.modal__panel {
+  position: relative;
+  width: min(100%, 40rem);
+  max-height: min(88vh, 46rem);
+  overflow-y: auto;
+  padding: clamp(1.6rem, 4vw, 2.5rem);
+  background: var(--superficie);
+  border-radius: var(--radio-lg);
+  box-shadow: var(--sombra-lg);
+}
+
+.modal__panel::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4px;
+  background: linear-gradient(90deg, var(--color-primario), var(--color-acento));
+}
+
+.modal__eyebrow {
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-primario-fuerte);
+}
+
+.modal__titulo {
+  margin-top: 0.5rem;
+  padding-right: 2.5rem;
+  font-size: clamp(1.5rem, 1.2rem + 1.4vw, 2rem);
+  font-weight: 800;
+}
+
+.modal__intro {
+  margin-top: var(--esp-4);
+  line-height: 1.7;
+  color: var(--tinta-media);
+}
+
+.modal__aviso {
+  margin-top: var(--esp-5);
+  padding: var(--esp-4);
+  font-size: 0.86rem;
+  line-height: 1.65;
+  color: var(--tinta-media);
+  background: var(--superficie-hundida);
+  border-left: 3px solid var(--color-primario);
+  border-radius: var(--radio-sm);
+}
+
+.modal__acciones {
+  margin-top: var(--esp-5);
+}
+
+.modal__cerrar {
+  position: absolute;
+  top: 0.9rem;
+  right: 0.9rem;
+  display: grid;
+  place-items: center;
+  width: var(--toque);
+  height: var(--toque);
+  color: var(--tinta-media);
+  background: var(--superficie-hundida);
+  border-radius: 50%;
+  transition: background-color var(--transicion), color var(--transicion);
+}
+
+.modal__cerrar:hover {
+  color: var(--superficie);
+  background: var(--color-primario-fuerte);
+}
+
+
+/* ==========================================================================
+   09. SOBRE NOSOTROS
+   ========================================================================== */
+
+.sobre__reja {
+  display: grid;
+  gap: var(--esp-9);
+}
+
+.glaciar {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radio-lg);
+  box-shadow: var(--sombra-md);
+}
+
+.pilares {
+  display: grid;
+  gap: var(--esp-4);
+  margin-top: var(--esp-7);
+}
+
+.pilares__item {
+  display: grid;
+  gap: 0.15rem;
+  padding: var(--esp-4) var(--esp-5);
+  background: var(--superficie-seccion);
+  border-left: 3px solid var(--color-primario);
+  border-radius: var(--radio-md);
+}
+
+.pilares__item strong {
+  font-size: 0.95rem;
+}
+
+.pilares__item span {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--tinta-media);
+}
+
+
+/* ==========================================================================
+   10. SERVICIOS — <details> / <summary>
+   ========================================================================== */
+
+.tarjetas {
+  display: grid;
+  gap: var(--esp-5);
+  margin-top: var(--esp-8);
+  align-items: start;
+}
+
+.tarjeta {
+  position: relative;
+  overflow: hidden;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-lg);
+  box-shadow: var(--sombra-sm);
+  transition: box-shadow var(--transicion), transform var(--transicion);
+}
+
+.tarjeta::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 1;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-primario), var(--color-acento));
+}
+
+.tarjeta:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--sombra-md);
+}
+
+.tarjeta__resumen {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--esp-4);
+  padding: var(--esp-6) var(--esp-5);
+  cursor: pointer;
+  /* Oculta el triángulo nativo en todos los motores */
+  list-style: none;
+}
+
+.tarjeta__resumen::-webkit-details-marker {
+  display: none;
+}
+
+.tarjeta__resumen::marker {
+  content: "";
+}
+
+.tarjeta__icono {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  color: var(--color-primario-fuerte);
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(2, 132, 199, 0.14));
+  border-radius: var(--radio-md);
+}
+
+.tarjeta__tituloBloque {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.tarjeta__titulo {
+  font-size: var(--txt-h3);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  color: var(--tinta-fuerte);
+}
+
+.tarjeta__sumario {
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--tinta-media);
+}
+
+.tarjeta__chevron {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-right: 2px solid var(--color-primario-fuerte);
+  border-bottom: 2px solid var(--color-primario-fuerte);
+  transform: rotate(45deg);
+  transition: transform var(--transicion);
+}
+
+details[open] > .tarjeta__resumen .tarjeta__chevron {
+  transform: rotate(-135deg);
+}
+
+.tarjeta__cuerpo {
+  display: grid;
+  gap: 0.9rem;
+  padding: var(--esp-5);
+  font-size: 0.94rem;
+  line-height: 1.75;
+  color: var(--tinta-media);
+  border-top: 1px solid var(--borde);
+}
+
+/* Sin JS no se puede animar la altura de <details> de forma fiable; se anima
+   la entrada del contenido, que sí es seguro y respeta reduced-motion. */
+details[open] > .tarjeta__cuerpo {
+  animation: aparecer 260ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(-0.35rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+
+/* ==========================================================================
+   11. TESTIMONIOS — CSS Scroll Snapping
+   ========================================================================== */
+
+.carril {
+  display: flex;
+  gap: var(--esp-5);
+  margin-top: var(--esp-8);
+  padding: 0.5rem 0.25rem 1.5rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
+  /* Compensa el padding del carril para que la tarjeta encajada al inicio no
+     quede con el borde cortado */
+  scroll-padding-inline-start: 0.25rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-acento) rgba(148, 163, 184, 0.22);
+}
+
+.carril::-webkit-scrollbar {
+  height: 0.5rem;
+}
+
+/* En Windows, declarar ::-webkit-scrollbar reactiva los botones de flecha
+   nativos en los extremos; se ocultan aquí y en el bloque de código. */
+.carril::-webkit-scrollbar-button,
+.ventana__codigo::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.carril::-webkit-scrollbar-track {
+  background: rgba(148, 163, 184, 0.18);
+  border-radius: var(--radio-full);
+}
+
+.carril::-webkit-scrollbar-thumb {
+  background: var(--color-primario);
+  border-radius: var(--radio-full);
+}
+
+.resena {
+  display: grid;
+  gap: var(--esp-4);
+  flex: 0 0 min(86%, 26rem);
+  align-content: start;
+  padding: var(--esp-6);
+  background: rgba(248, 250, 252, 0.055);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: var(--radio-lg);
+  /* «start», no «center»: con varias tarjetas visibles y snap obligatorio, el
+     navegador desplaza lo mínimo para revelar el ancla y un punto de encaje
+     centrado tira el carril de vuelta a la tarjeta anterior. Alineando al
+     inicio, cada enlace de los puntos deja su testimonio a la vista. */
+  scroll-snap-align: start;
+  /* Amortigua el salto vertical al usar los puntos de navegación */
+  scroll-margin-block: 8rem;
+}
+
+.resena::before {
+  content: "“";
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 3.25rem;
+  line-height: 0.5;
+  color: var(--color-acento);
+  opacity: 0.6;
+}
+
+@supports (content: "x" / "y") {
+  .resena::before {
+    content: "“" / "";
+  }
+}
+
+.resena__cita p {
+  line-height: 1.8;
+  color: var(--nieve-media);
+}
+
+.resena__autor {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding-top: var(--esp-4);
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.resena__autor strong {
+  font-size: 0.95rem;
+  color: var(--nieve-fuerte);
+}
+
+.resena__cargo {
+  display: block;
+  margin-top: 0.1rem;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--nieve-suave);
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: var(--toque);
+  height: var(--toque);
+  font-size: 0.85rem;
+  font-weight: 700;
+  /* #0F172A sobre el cián → 8.34:1 ✓. El color va como background-color sólido
+     y el degradado sólo lo matiza: si el degradado no se pinta (modo de colores
+     forzados, impresión), el contraste de las iniciales se mantiene. */
+  color: var(--color-secundario);
+  background-color: var(--color-acento);
+  background-image: linear-gradient(135deg, #7DD3FC, #38BDF8);
+  border-radius: 50%;
+}
+
+.puntos {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.puntos__punto {
+  display: grid;
+  place-items: center;
+  width: var(--toque);
+  height: var(--toque);
+  border-radius: 50%;
+  text-decoration: none;
+}
+
+.puntos__punto::before {
+  content: "";
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: rgba(148, 163, 184, 0.55);
+  transition: background-color var(--transicion), transform var(--transicion);
+}
+
+.puntos__punto:hover::before,
+.puntos__punto:focus-visible::before {
+  background: var(--color-acento);
+  transform: scale(1.4);
+}
+
+.nota-ficticia {
+  margin-top: var(--esp-5);
+  font-size: 0.8rem;
+  text-align: center;
+  color: var(--nieve-suave);
+}
+
+
+/* ==========================================================================
+   12. CONTACTO — alerta :target y formulario
+   ========================================================================== */
+
+.contacto__reja {
+  display: grid;
+  gap: var(--esp-8);
+  align-items: start;
+}
+
+.contacto__datos {
+  display: grid;
+  gap: var(--esp-4);
+  margin-top: var(--esp-6);
+}
+
+.contacto__datos li {
+  display: grid;
+  gap: 0.15rem;
+  padding-left: var(--esp-4);
+  border-left: 2px solid var(--borde-fuerte);
+}
+
+.contacto__datos strong {
+  font-size: 0.9rem;
+}
+
+.contacto__datos span {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--tinta-media);
+}
+
+/* --- Alerta de éxito simulada (se revela con :target) -------------------- */
+
+.alerta-exito {
+  display: none;
+}
+
+.alerta-exito:target {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--esp-4);
+  align-items: start;
+  margin-bottom: var(--esp-5);
+  padding: var(--esp-5);
+  padding-right: 3.5rem;
+  color: var(--color-exito);
+  background: var(--superficie-exito);
+  border: 1px solid rgba(4, 120, 87, 0.32);
+  border-left: 4px solid var(--color-exito);
+  border-radius: var(--radio-md);
+  animation: aparecer 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.alerta-exito strong {
+  display: block;
+  color: var(--color-exito-texto);
+}
+
+.alerta-exito p {
+  margin-top: 0.3rem;
+  font-size: 0.86rem;
+  line-height: 1.6;
+  color: var(--color-exito-texto);
+}
+
+.alerta-exito__cerrar {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  color: var(--color-exito-texto);
+  border-radius: 50%;
+  transition: background-color var(--transicion);
+}
+
+.alerta-exito__cerrar:hover {
+  background: rgba(4, 120, 87, 0.14);
+}
+
+/* --- Formulario ---------------------------------------------------------- */
+
+.formulario {
+  display: grid;
+  gap: var(--esp-5);
+  padding: clamp(1.35rem, 3.5vw, 2rem);
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-lg);
+  box-shadow: var(--sombra-md);
+}
+
+.formulario__titulo {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--tinta-fuerte);
+}
+
+.campo {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.campo__etiqueta {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--tinta-fuerte);
+}
+
+.campo__req {
+  color: var(--color-error);
+}
+
+.campo__control {
+  width: 100%;
+  min-height: var(--toque);
+  padding: 0.7rem 0.9rem;
+  font-size: 0.95rem;
+  color: var(--tinta-fuerte);
+  background: var(--superficie);
+  border: 1px solid var(--borde-fuerte);
+  border-radius: var(--radio-sm);
+  transition: border-color var(--transicion), box-shadow var(--transicion);
+}
+
+.campo__control--area {
+  min-height: 8rem;
+  line-height: 1.65;
+  resize: vertical;
+}
+
+.campo__control::placeholder {
+  /* 4.76:1 sobre blanco — el placeholder también es texto */
+  color: var(--tinta-suave);
+}
+
+.campo__control:hover {
+  border-color: var(--color-primario);
+}
+
+.campo__control:focus {
+  border-color: var(--color-primario-fuerte);
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.16);
+}
+
+/* Realimentación de error sin JavaScript: :user-invalid sólo marca el campo
+   una vez la persona ha interactuado con él, nunca al cargar la página. */
+.campo__control:user-invalid {
+  border-color: var(--color-error);
+  background: var(--superficie-error);
+}
+
+.campo__control:user-invalid + .campo__ayuda {
+  color: var(--color-error);
+  font-weight: 500;
+}
+
+.campo__ayuda {
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: var(--tinta-media);
+}
+
+.formulario__nota {
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: var(--tinta-suave);
+}
+
+
+/* ==========================================================================
+   13. PIE DE PÁGINA
+   ========================================================================== */
+
+.pie {
+  padding-top: var(--esp-10);
+  padding-bottom: var(--esp-6);
+  border-top: 1px solid var(--borde-oscuro);
+}
+
+.pie__reja {
+  display: grid;
+  gap: var(--esp-8);
+}
+
+.marca--pie .marca__icono {
+  width: 2rem;
+  height: 2rem;
+}
+
+.pie__lema {
+  max-width: 38ch;
+  margin-top: var(--esp-4);
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--nieve-suave);
+}
+
+.pie__titulo {
+  margin-bottom: var(--esp-4);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-acento);
+}
+
+.pie__lista {
+  display: grid;
+  gap: 0.15rem;
+  margin: 0;
+  /* Compensa el padding que da área táctil a los enlaces */
+  margin-left: -0.5rem;
+}
+
+/* inline-block + padding: eleva el destino de pulsación de 17px a 30px de alto,
+   por encima del mínimo de 24x24 de WCAG 2.5.8 */
+.pie__lista a {
+  display: inline-block;
+  justify-self: start;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.9rem;
+  color: var(--nieve-media);
+  text-decoration: none;
+  border-radius: var(--radio-sm);
+}
+
+.pie__lista a:hover {
+  color: var(--color-acento);
+  background: var(--velo-claro);
+  text-decoration: underline;
+}
+
+.pie__aviso summary {
+  padding-block: 0.35rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--nieve-media);
+  cursor: pointer;
+}
+
+.pie__aviso[open] summary {
+  color: var(--color-acento);
+}
+
+.pie__aviso p {
+  margin-top: 0.7rem;
+  font-size: 0.83rem;
+  line-height: 1.7;
+  color: var(--nieve-suave);
+}
+
+.pie__mini {
+  margin-top: var(--esp-4);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--nieve-suave);
+}
+
+.pie__base {
+  display: grid;
+  gap: 0.4rem;
+  margin-top: var(--esp-8);
+  padding-top: var(--esp-5);
+  font-size: 0.82rem;
+  color: var(--nieve-suave);
+  border-top: 1px solid var(--borde-oscuro);
+}
+
+
+/* ==========================================================================
+   14. FOCO VISIBLE Y PREFERENCIAS DEL USUARIO
+   ========================================================================== */
+
+/* Reserva para navegadores sin :focus-visible … */
+:focus {
+  outline: 3px solid var(--anillo);
+  outline-offset: 3px;
+}
+
+/* … y comportamiento moderno: sólo se dibuja en navegación por teclado */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 3px solid var(--anillo);
+  outline-offset: 3px;
+}
+
+/* El input del menú es invisible: su anillo lo pinta .nav__boton (§05) */
+.nav__estado:focus,
+.nav__estado:focus-visible {
+  outline: none;
+}
+
+/* El carril de testimonios es enfocable para permitir scroll con el teclado */
+.carril:focus-visible {
+  outline-offset: 6px;
+}
+
+/* Respeto por quien pide menos movimiento */
+@media (prefers-reduced-motion: reduce) {
+
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .carril {
+    scroll-behavior: auto;
+  }
+
+  .boton:hover,
+  .tarjeta:hover {
+    transform: none;
+  }
+}
+
+/* Refuerzo de bordes para quien pide más contraste */
+@media (prefers-contrast: more) {
+
+  .tarjeta,
+  .formulario,
+  .campo__control,
+  .resena {
+    border-color: var(--tinta-fuerte);
+  }
+
+  .seccion--oscura .resena {
+    border-color: var(--nieve-media);
+  }
+
+  .campo__ayuda,
+  .formulario__nota {
+    color: var(--tinta-fuerte);
+  }
+}
+
+
+/* ==========================================================================
+   15. MEDIA QUERIES — estrategia Mobile-First
+   Todo lo anterior describe la vista estrecha. Estos tres saltos sólo añaden
+   lo que el ancho extra permite.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   ≥ 480px — móviles en horizontal y phablets
+   -------------------------------------------------------------------------- */
+@media (min-width: 480px) {
+
+  .pilares {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .contacto__datos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .resena {
+    flex-basis: min(80%, 26rem);
+  }
+
+  .pie__reja {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pie__marca {
+    grid-column: 1 / -1;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   ≥ 768px — tabletas. Aquí el menú deja de ser desplegable.
+   Los selectores duplicados igualan la especificidad de las reglas del
+   checkbox-hack (§05), que de otro modo seguirían ganando.
+   -------------------------------------------------------------------------- */
+@media (min-width: 768px) {
+
+  .nav__estado,
+  .nav__boton,
+  .nav__fondo,
+  .nav__estado:checked ~ .nav__fondo {
+    display: none;
+  }
+
+  .nav,
+  .nav__estado:checked ~ .nav {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    visibility: visible;
+    background: none;
+    border-bottom: 0;
+    box-shadow: none;
+  }
+
+  .nav__lista {
+    display: flex;
+    align-items: center;
+    gap: 0.1rem;
+    padding: 0;
+  }
+
+  .nav__enlace {
+    padding: 0.5rem 0.8rem;
+  }
+
+  .nav__enlace[aria-current="page"]::after {
+    margin-top: 0.2rem;
+  }
+
+  .sobre__reja,
+  .contacto__reja {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--esp-8);
+    align-items: center;
+  }
+
+  .contacto__reja {
+    align-items: start;
+  }
+
+  .pilares {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .contacto__datos {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .tarjetas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Con dos columnas y tres tarjetas, la última ocupa la fila completa */
+  .tarjeta:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .tarjeta:last-child .tarjeta__resumen {
+    max-width: 48rem;
+  }
+
+  .resena {
+    flex-basis: min(56%, 27rem);
+  }
+
+  .pie__base {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--esp-5);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   ≥ 1024px — escritorio
+   -------------------------------------------------------------------------- */
+@media (min-width: 1024px) {
+
+  .seccion {
+    padding-block: var(--esp-11);
+  }
+
+  .hero__reja {
+    grid-template-columns: 1.04fr 0.96fr;
+    gap: var(--esp-9);
+    align-items: center;
+  }
+
+  .sobre__reja {
+    grid-template-columns: 1.12fr 0.88fr;
+    gap: var(--esp-10);
+    /* La columna de texto es mucho más alta que la ilustración: en lugar de
+       centrarla y dejar dos huecos, se ancla arriba y acompaña la lectura. */
+    align-items: start;
+  }
+
+  .sobre__arte {
+    align-self: stretch;
+  }
+
+  .glaciar {
+    position: sticky;
+    top: calc(var(--alto-cabecera) + 2rem);
+  }
+
+  .contacto__reja {
+    grid-template-columns: 0.9fr 1.1fr;
+    gap: var(--esp-10);
+  }
+
+  .tarjetas {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .tarjeta:last-child {
+    grid-column: auto;
+  }
+
+  .tarjeta:last-child .tarjeta__resumen {
+    max-width: none;
+  }
+
+  /* Dos testimonios por vista: deja el encaje al inicio bien definido y da
+     más aire a citas largas */
+  .resena {
+    flex-basis: min(46%, 30rem);
+  }
+
+  .pie__reja {
+    grid-template-columns: 1.6fr 1fr 1fr 1.25fr;
+    gap: var(--esp-6);
+  }
+
+  .pie__marca {
+    grid-column: auto;
+  }
+}

@@ -1,0 +1,807 @@
+<!-- Sitio web sobre Yeti Linux -->
+<!DOCTYPE html>
+<html lang="es">
+
+<!--
+  ============================================================================
+  TEMA DEL DOCUMENTO: Yeti / Yeti Linux
+  Declarado además en: <body data-topic>, subtítulo del hero, meta description,
+  Open Graph y primera línea de la sección «Sobre nosotros».
+  ============================================================================
+
+  LIMITACIONES DE ESTE PROTOTIPO (NO CONTIENE JAVASCRIPT)
+  ---------------------------------------------------------------------------
+  Todas las interacciones se resuelven con HTML y CSS. Eso implica límites
+  reales que conviene conocer antes de evaluar el prototipo:
+
+  1. FORMULARIO SIN BACKEND. No hay API ni envío de datos. El formulario usa
+     action="#contacto-gracias" con method="get": el navegador sustituye la
+     cadena de consulta y conserva el fragmento, con lo que :target muestra
+     una alerta de éxito SIMULADA. Consecuencias: los datos escritos quedan
+     visibles en la barra de direcciones, la página se recarga al enviar y no
+     existe estado «enviando…», reintento, ni validación en servidor. La
+     única validación es la nativa de HTML5 (required, type="email",
+     minlength) más el realce visual con :user-invalid.
+
+  2. NOTIFICACIONES. No hay avisos temporizados: la alerta de éxito permanece
+     hasta que se pulsa «Cerrar». Tampoco se anuncia como región dinámica
+     (aria-live), porque el elemento ya existe en el DOM al cargar la página;
+     por eso se le añade tabindex="-1", de modo que el salto al fragmento
+     lleve el foco hasta el mensaje.
+
+  3. MODAL :target. Se abre con un enlace a #descargar y se cierra con el
+     fondo o el botón «Cerrar», ambos apuntando al hero (#inicio). Sin JS no
+     hay retención de foco dentro del diálogo ni cierre con la tecla Escape.
+     Cuando está cerrado se aplica display:none, lo que sí garantiza que su
+     contenido quede fuera del orden de tabulación y del árbol de
+     accesibilidad.
+
+  4. MENÚ MÓVIL (checkbox-hack). El estado vive en un <input type="checkbox">
+     real, por lo que funciona con ratón, toque y teclado (Tab + Espacio),
+     pero no puede exponer aria-expanded dinámico: eso exigiría JS. Al pulsar
+     un enlace del panel, éste NO se cierra por sí solo; se cierra con la «X»
+     o tocando fuera. Se compensa con aria-label descriptivo en el control.
+
+  5. CARRUSEL DE TESTIMONIOS. Es scroll-snap nativo, no un carrusel con
+     estado: no hay reproducción automática ni botones anterior/siguiente que
+     «sepan» en qué tarjeta estamos. Los puntos son enlaces de ancla: llevan
+     el carril hasta dejar a la vista el testimonio pedido, pero no pueden
+     resaltar cuál está activo, porque eso exigiría leer la posición de
+     desplazamiento, y eso exigiría JS.
+
+  6. SEO. No se incluyen robots.txt ni sitemap.xml: este entregable es un
+     documento único, sin dominio ni rutas adicionales que indexar. Tampoco
+     og:image, porque el prototipo no admite imágenes externas y los
+     rastreadores no interpretan SVG en esa propiedad. En producción, los
+     tres se añadirían junto al despliegue.
+
+  7. FUENTE TIPOGRÁFICA. Inter se carga con <link> a Google Fonts, tal como
+     pide el encargo. Es un recurso tipográfico, no una dependencia de
+     código: si no hay red, la cadena de reserva (system-ui, Segoe UI,
+     Roboto) mantiene el diseño intacto.
+  ============================================================================
+-->
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Yeti Linux — Sistema operativo educativo inmutable basado en NixOS</title>
+
+  <!-- SEO: la descripción nombra el proyecto y su propósito -->
+  <meta name="description"
+    content="Yeti Linux es un sistema operativo educativo inmutable basado en NixOS y KDE Plasma 6, creado para reemplazar Windows Education en laboratorios escolares: sesiones efímeras en RAM, blindaje declarativo y suite STEM preinstalada.">
+  <meta name="author" content="Proyecto Yeti Linux">
+  <meta name="theme-color" content="#0F172A">
+  <link rel="canonical" href="https://yetilinux.example/">
+
+  <!-- Open Graph: mismo tema y propósito que la meta description -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Yeti Linux">
+  <meta property="og:locale" content="es_ES">
+  <meta property="og:url" content="https://yetilinux.example/">
+  <meta property="og:title" content="Yeti Linux — sistema operativo educativo inmutable">
+  <meta property="og:description"
+    content="Yeti Linux: sistema operativo educativo inmutable basado en NixOS y KDE Plasma 6. Reemplaza Windows Education en las aulas con sesiones efímeras en RAM y configuración declarativa a prueba de manipulaciones.">
+  <!-- og:image se omite deliberadamente: sin imágenes externas en este prototipo -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Yeti Linux — sistema operativo educativo inmutable">
+  <meta name="twitter:description"
+    content="Alternativa inmutable a Windows Education para laboratorios escolares, basada en NixOS y KDE Plasma 6.">
+
+  <!-- Favicon como data URI SVG: evita una petición externa y un 404 -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M20 1.5 36.5 8.4V21c0 8.9-7 14.7-16.5 17.5C10.5 35.7 3.5 29.9 3.5 21V8.4z' fill='%230284C7'/%3E%3Cpath d='M9 28.5 15.4 17.8a1 1 0 0 1 1.7 0l2.6 4.4 3.3-6.6a1 1 0 0 1 1.8 0L31 28.5z' fill='%23F8FAFC'/%3E%3C/svg%3E">
+
+  <!-- Tipografía Inter (recurso tipográfico, no dependencia de código) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body data-topic="Yeti / Yeti Linux">
+
+  <!-- Enlace de salto: sólo visible al recibir foco de teclado -->
+  <a class="salto-contenido" href="#contenido">Saltar al contenido principal</a>
+
+  <!-- ======================================================================
+       HEADER / NAVEGACIÓN
+       El checkbox conserva el estado del menú móvil. No se oculta con
+       display:none para que siga siendo enfocable y alternable con Espacio.
+       ====================================================================== -->
+  <header class="cabecera">
+    <div class="contenedor cabecera__fila">
+
+      <a class="marca" href="#inicio">
+        <svg class="marca__icono" viewBox="0 0 40 40" width="40" height="40" aria-hidden="true" focusable="false">
+          <defs>
+            <linearGradient id="gradMarca" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#38BDF8" />
+              <stop offset="100%" stop-color="#0284C7" />
+            </linearGradient>
+          </defs>
+          <path d="M20 1.5 36.5 8.4V21c0 8.9-7 14.7-16.5 17.5C10.5 35.7 3.5 29.9 3.5 21V8.4z" fill="url(#gradMarca)" />
+          <path d="M20 1.5 36.5 8.4V21c0 8.9-7 14.7-16.5 17.5C10.5 35.7 3.5 29.9 3.5 21V8.4z" fill="none"
+            stroke="#F8FAFC" stroke-opacity=".38" stroke-width="1.1" />
+          <path d="M9 28.5 15.4 17.8a1 1 0 0 1 1.7 0l2.6 4.4 3.3-6.6a1 1 0 0 1 1.8 0L31 28.5z" fill="#F8FAFC" />
+          <circle cx="20" cy="9.6" r="1.7" fill="#F8FAFC" fill-opacity=".92" />
+        </svg>
+        <span class="marca__texto">Yeti&nbsp;Linux</span>
+      </a>
+
+      <input class="nav__estado" type="checkbox" id="nav-toggle"
+        aria-label="Abrir o cerrar el menú de navegación">
+      <label class="nav__boton" for="nav-toggle" aria-hidden="true">
+        <span class="nav__barras"></span>
+      </label>
+      <!-- Capa de cierre: permite plegar el menú tocando fuera del panel -->
+      <label class="nav__fondo" for="nav-toggle" aria-hidden="true"></label>
+
+      <nav class="nav" aria-label="Navegación principal">
+        <ul class="nav__lista">
+          <li><a class="nav__enlace" href="#inicio" aria-current="page">Inicio</a></li>
+          <li><a class="nav__enlace" href="#sobre">Sobre</a></li>
+          <li><a class="nav__enlace" href="#servicios">Servicios</a></li>
+          <li><a class="nav__enlace" href="#testimonios">Testimonios</a></li>
+          <li><a class="nav__enlace" href="#contacto">Contacto</a></li>
+        </ul>
+      </nav>
+
+    </div>
+  </header>
+
+  <main id="contenido">
+
+    <!-- ====================================================================
+         HERO
+         ==================================================================== -->
+    <section class="hero seccion--oscura" id="inicio" aria-labelledby="hero-titulo">
+      <div class="contenedor hero__reja">
+
+        <div class="hero__texto">
+          <p class="chip"><span class="chip__punto" aria-hidden="true"></span>Beta pública 0.9 · ISO de 2,4&nbsp;GB</p>
+
+          <h1 class="hero__titulo" id="hero-titulo">Yeti Linux</h1>
+
+          <!-- Subtítulo obligatorio, literal -->
+          <p class="hero__subtitulo">Sitio web sobre Yeti Linux</p>
+
+          <p class="hero__descripcion">
+            Alternativa inmutable y de alto rendimiento a Windows Education basada en
+            NixOS y KDE Plasma&nbsp;6. Cada equipo del laboratorio arranca idéntico al
+            primer día, sin importar lo que ocurrió en la clase anterior.
+          </p>
+
+          <p class="hero__acciones">
+            <a class="boton boton--primario" href="#descargar">
+              Descargar Yeti Linux Beta
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+                <path d="M12 3v12m0 0-4.5-4.5M12 15l4.5-4.5M4 19h16" fill="none" stroke="currentColor"
+                  stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </a>
+            <a class="boton boton--fantasma" href="#servicios">Ver características</a>
+          </p>
+
+          <dl class="datos">
+            <div class="datos__item">
+              <dt class="datos__cifra">100&nbsp;%</dt>
+              <dd class="datos__etiqueta">Configuración reproducible</dd>
+            </div>
+            <div class="datos__item">
+              <dt class="datos__cifra">0 rastros</dt>
+              <dd class="datos__etiqueta">Tras cada reinicio</dd>
+            </div>
+            <div class="datos__item">
+              <dt class="datos__cifra">~3 min</dt>
+              <dd class="datos__etiqueta">Instalación con Calamares</dd>
+            </div>
+          </dl>
+        </div>
+
+        <!-- Pieza visual: fragmento declarativo real, compuesto con HTML y CSS -->
+        <figure class="ventana">
+          <div class="ventana__barra" aria-hidden="true">
+            <span class="ventana__semaforo"></span>
+            <span class="ventana__semaforo"></span>
+            <span class="ventana__semaforo"></span>
+            <span class="ventana__ruta">/etc/nixos/configuration.nix</span>
+          </div>
+          <pre class="ventana__codigo"><code>{ pkgs, ... }: {
+  <span class="tk-com"># La sesión vive en RAM: se borra al apagar</span>
+  fileSystems.<span class="tk-str">"/home"</span> = {
+    device = <span class="tk-str">"tmpfs"</span>;
+    fsType = <span class="tk-str">"tmpfs"</span>;
+    options = [ <span class="tk-str">"mode=1777"</span> <span class="tk-str">"size=4G"</span> ];
+  };
+
+  <span class="tk-com"># doas sustituye a sudo: superficie mínima</span>
+  security.doas.enable = <span class="tk-val">true</span>;
+  security.sudo.enable = <span class="tk-val">false</span>;
+
+  services.desktopManager.plasma6.enable = <span class="tk-val">true</span>;
+}</code></pre>
+          <figcaption class="ventana__pie">
+            Una sola declaración describe el estado completo del equipo.
+          </figcaption>
+        </figure>
+
+      </div>
+
+      <!-- Divisor: cresta glaciar que enlaza con la banda clara siguiente -->
+      <div class="divisor" aria-hidden="true">
+        <svg class="divisor__svg" viewBox="0 0 1440 130" preserveAspectRatio="none" focusable="false">
+          <path class="divisor__tras" d="M0 130V72l180 26 190-44 200 40 210-52 200 46 190-32 170 34v40z" />
+          <path class="divisor__frente" d="M0 130V96l210 20 180-42 200 44 220-56 180 50 190-28 260 30v16z" />
+        </svg>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         MODAL CSS-ONLY (:target)
+         ==================================================================== -->
+    <div class="modal" id="descargar" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
+      <a class="modal__fondo" href="#inicio" tabindex="-1" aria-hidden="true"></a>
+
+      <div class="modal__panel" tabindex="-1">
+        <p class="modal__eyebrow">Imagen ISO · x86_64 · UEFI y BIOS heredado</p>
+        <h2 class="modal__titulo" id="modal-titulo">Descargar Yeti Linux Beta</h2>
+
+        <p class="modal__intro">
+          Una única imagen para arrancar en vivo o instalar en el laboratorio completo.
+          Todo lo que necesita el aula viene dentro:
+        </p>
+
+        <ul class="lista-check">
+          <li><strong>Instalador gráfico Calamares</strong>, con particionado guiado y despliegue
+            desatendido para equipos idénticos.</li>
+          <li><strong>Escritorio KDE Plasma&nbsp;6</strong> sobre Wayland, con perfil escolar ya
+            aplicado y aceleración por hardware.</li>
+          <li><strong>Ejecutor <code>doas</code></strong> en lugar de <code>sudo</code>: reglas cortas,
+            auditables y sin escalada accidental de privilegios.</li>
+          <li><strong>Limpieza automática de la sesión en RAM (<code>tmpfs</code>)</strong>: descargas,
+            historial y archivos temporales desaparecen al reiniciar.</li>
+        </ul>
+
+        <p class="modal__aviso">
+          <strong>Prototipo:</strong> este sitio no aloja archivos. Sin JavaScript no hay
+          descarga real, ni suma de verificación calculada, ni selección de espejo.
+        </p>
+
+        <p class="modal__acciones">
+          <a class="boton boton--primario" href="#inicio">Entendido, volver al inicio</a>
+        </p>
+
+        <a class="modal__cerrar" href="#inicio" aria-label="Cerrar la ventana de descarga">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+            <path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" />
+          </svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         SOBRE NOSOTROS
+         ==================================================================== -->
+    <section class="seccion sobre" id="sobre" aria-labelledby="sobre-titulo">
+      <div class="contenedor sobre__reja">
+
+        <div class="sobre__texto">
+          <p class="eyebrow">Sobre nosotros</p>
+          <h2 class="seccion__titulo" id="sobre-titulo">Un laboratorio que siempre vuelve a su sitio</h2>
+
+          <!-- Primera línea: tema y objetivo explícitos -->
+          <p class="parrafo parrafo--destacado">
+            Este sitio trata sobre <strong>Yeti / Yeti Linux</strong>, y el objetivo del proyecto es
+            claro: <strong>reemplazar Windows Education en las aulas mediante NixOS</strong>, con un
+            sistema operativo educativo inmutable que ninguna sesión de clase pueda degradar.
+          </p>
+
+          <p class="parrafo">
+            Yeti Linux aprovecha la <strong>potencia declarativa de NixOS</strong>: el equipo entero
+            —paquetes, permisos, servicios y escritorio— se describe en un único archivo versionado.
+            No se instala software «a mano»; se declara el estado deseado y el sistema converge a él.
+            Si alguien borra un paquete, cambia una preferencia o rompe una dependencia, la siguiente
+            generación restaura exactamente lo declarado. Reproducir un aula de treinta máquinas deja
+            de ser un ritual de clonado y pasa a ser el mismo archivo aplicado treinta veces.
+          </p>
+
+          <p class="parrafo">
+            El segundo pilar es la <strong>sustitución de <code>sudo</code> por <code>doas</code></strong>.
+            Donde <code>sudo</code> ofrece miles de líneas de configuración y una superficie difícil de
+            auditar, <code>doas</code> se explica en cinco reglas legibles de un vistazo. El resultado
+            es que las computadoras escolares <strong>permanecen blindadas</strong>: el alumnado trabaja
+            con libertad total en su sesión, pero sin ninguna ruta hacia el sistema base.
+          </p>
+
+          <ul class="pilares">
+            <li class="pilares__item"><strong>Declarativo</strong><span>Un archivo describe el aula completa</span></li>
+            <li class="pilares__item"><strong>Efímero</strong><span>La sesión se destruye al reiniciar</span></li>
+            <li class="pilares__item"><strong>Blindado</strong><span><code>doas</code> con reglas auditables</span></li>
+          </ul>
+        </div>
+
+        <!-- Ilustración: capas de glaciar, cumbres y huella de yeti -->
+        <div class="sobre__arte">
+          <svg class="glaciar" viewBox="0 0 480 400" role="img"
+            aria-label="Ilustración de una cumbre nevada sobre tres capas de hielo apiladas, con una huella de yeti en la nieve."
+            focusable="false">
+            <defs>
+              <linearGradient id="gradCielo" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#E0F2FE" />
+                <stop offset="100%" stop-color="#F8FAFC" />
+              </linearGradient>
+              <linearGradient id="gradHielo" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#38BDF8" stop-opacity=".95" />
+                <stop offset="100%" stop-color="#0284C7" stop-opacity=".95" />
+              </linearGradient>
+              <linearGradient id="gradRoca" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#334155" />
+                <stop offset="100%" stop-color="#0F172A" />
+              </linearGradient>
+            </defs>
+
+            <rect x="0" y="0" width="480" height="400" rx="24" fill="url(#gradCielo)" />
+
+            <!-- Sol pálido y copo -->
+            <circle cx="386" cy="70" r="30" fill="#38BDF8" fill-opacity=".16" />
+            <circle cx="386" cy="70" r="17" fill="#0284C7" fill-opacity=".22" />
+            <g stroke="#0284C7" stroke-opacity=".45" stroke-width="2" stroke-linecap="round">
+              <path d="M92 62v34M75 71.5l34 15M109 71.5l-34 15" />
+            </g>
+
+            <!-- Cumbres traseras: la silueta rebasa el lienzo por ambos lados
+                 para que no quede ningún escalón visible en las esquinas -->
+            <path d="M-10 250 78 132l62 74 46-48 74 92 58-58 78 96 62-38 74 74v92H-10z" fill="#94A3B8"
+              fill-opacity=".45" />
+            <!-- Cumbre principal -->
+            <path d="M118 268 224 108l40 60 34-38 106 138z" fill="url(#gradRoca)" />
+            <!-- Nieve de la cumbre -->
+            <path d="M224 108l30 45-16 8-14-10-16 12-12-9z" fill="#F8FAFC" />
+            <path d="M298 130l22 29-13 5-11-8-10 7-6-6z" fill="#F8FAFC" fill-opacity=".9" />
+
+            <!-- Tres capas de hielo apiladas: metáfora de las generaciones declarativas -->
+            <g>
+              <rect x="46" y="258" width="388" height="34" rx="10" fill="url(#gradHielo)" fill-opacity=".38" />
+              <rect x="62" y="298" width="356" height="34" rx="10" fill="url(#gradHielo)" fill-opacity=".62" />
+              <rect x="78" y="338" width="324" height="34" rx="10" fill="url(#gradHielo)" />
+              <g fill="#F8FAFC" fill-opacity=".85">
+                <rect x="94" y="352" width="86" height="6" rx="3" />
+                <rect x="192" y="352" width="46" height="6" rx="3" />
+                <rect x="250" y="352" width="64" height="6" rx="3" />
+                <rect x="78" y="312" width="70" height="6" rx="3" fill-opacity=".6" />
+                <rect x="160" y="312" width="112" height="6" rx="3" fill-opacity=".6" />
+                <rect x="62" y="272" width="54" height="6" rx="3" fill-opacity=".45" />
+                <rect x="128" y="272" width="90" height="6" rx="3" fill-opacity=".45" />
+              </g>
+            </g>
+
+            <!-- Huella de yeti hundida en la ladera nevada, ligeramente girada -->
+            <g fill="#0F172A" fill-opacity=".3" transform="rotate(-12 118 222)">
+              <ellipse cx="118" cy="224" rx="16" ry="20" />
+              <circle cx="103" cy="200" r="4.8" />
+              <circle cx="114" cy="195" r="5.2" />
+              <circle cx="125" cy="196" r="4.8" />
+              <circle cx="135" cy="203" r="4.3" />
+            </g>
+          </svg>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SERVICIOS / CARACTERÍSTICAS  (<details> + <summary>, sin JS)
+         ==================================================================== -->
+    <section class="seccion seccion--gris servicios" id="servicios" aria-labelledby="servicios-titulo">
+      <div class="contenedor">
+
+        <div class="seccion__encabezado">
+          <p class="eyebrow">Servicios y características</p>
+          <h2 class="seccion__titulo" id="servicios-titulo">Tres decisiones de ingeniería que sostienen el aula</h2>
+          <p class="seccion__entradilla">
+            Despliega la tarjeta que te interese: cada una explica qué hace Yeti Linux,
+            cómo lo consigue y qué gana el equipo de TI escolar.
+          </p>
+        </div>
+
+        <div class="tarjetas">
+
+          <article class="tarjeta">
+            <details class="tarjeta__detalles">
+              <summary class="tarjeta__resumen">
+                <span class="tarjeta__icono" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="26" height="26" focusable="false">
+                    <path d="M12 2.5 20 6v6.2c0 4.6-3.3 7.6-8 9.3-4.7-1.7-8-4.7-8-9.3V6z" fill="none"
+                      stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+                    <path d="M8.4 12.2l2.6 2.6 4.6-5" fill="none" stroke="currentColor" stroke-width="1.9"
+                      stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </span>
+                <span class="tarjeta__tituloBloque">
+                  <span class="tarjeta__titulo">Inmutabilidad declarativa</span>
+                  <span class="tarjeta__sumario">Resiliencia ante modificaciones indebidas</span>
+                </span>
+                <span class="tarjeta__chevron" aria-hidden="true"></span>
+              </summary>
+              <div class="tarjeta__cuerpo">
+                <p>
+                  El sistema base se monta en modo de sólo lectura y se reconstruye desde su
+                  declaración en Nix. Ningún instalador improvisado, ninguna barra de herramientas
+                  y ninguna edición del registro sobreviven a un reinicio.
+                </p>
+                <p>
+                  Cada cambio autorizado genera una <strong>generación</strong> nueva y verificable.
+                  Si una actualización rompe algo, el menú de arranque ofrece la generación anterior:
+                  la reversión tarda lo que tarda encender el equipo.
+                </p>
+                <ul class="lista-check lista-check--compacta">
+                  <li>Sistema de archivos raíz inmutable</li>
+                  <li>Reversión atómica desde el gestor de arranque</li>
+                  <li>Configuración versionada en Git, revisable por el equipo de TI</li>
+                </ul>
+              </div>
+            </details>
+          </article>
+
+          <article class="tarjeta">
+            <details class="tarjeta__detalles">
+              <summary class="tarjeta__resumen">
+                <span class="tarjeta__icono" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="26" height="26" focusable="false">
+                    <g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+                      <path d="M12 2.6v18.8M4.1 7.1l15.8 9.8M19.9 7.1 4.1 16.9" />
+                      <path d="M12 6.2l2.6-2.4M12 6.2 9.4 3.8M12 17.8l2.6 2.4M12 17.8l-2.6 2.4" />
+                    </g>
+                  </svg>
+                </span>
+                <span class="tarjeta__tituloBloque">
+                  <span class="tarjeta__titulo">Sesiones efímeras (Deep Freeze)</span>
+                  <span class="tarjeta__sumario">La memoria RAM como disco del alumnado</span>
+                </span>
+                <span class="tarjeta__chevron" aria-hidden="true"></span>
+              </summary>
+              <div class="tarjeta__cuerpo">
+                <p>
+                  El directorio personal se monta sobre <code>tmpfs</code>, es decir, sobre la
+                  <strong>memoria RAM</strong>. Todo lo que ocurre durante la clase —descargas,
+                  historial de navegación, credenciales guardadas, archivos temporales— se
+                  <strong>destruye automáticamente al reiniciar</strong>, sin scripts de limpieza ni
+                  agentes que auditar.
+                </p>
+                <p>
+                  Como efecto secundario, el rendimiento mejora: leer y escribir en RAM es más
+                  rápido que en un disco mecánico y el desgaste de las unidades SSD cae en picado.
+                  El trabajo que deba conservarse va a la nube del centro o a un pendrive.
+                </p>
+                <ul class="lista-check lista-check--compacta">
+                  <li>Cero datos personales persistentes entre turnos</li>
+                  <li>Privacidad por diseño para grupos que comparten equipo</li>
+                  <li>Sin tareas nocturnas de restauración de imágenes</li>
+                </ul>
+              </div>
+            </details>
+          </article>
+
+          <article class="tarjeta">
+            <details class="tarjeta__detalles">
+              <summary class="tarjeta__resumen">
+                <span class="tarjeta__icono" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="26" height="26" focusable="false">
+                    <rect x="2.6" y="4" width="18.8" height="16" rx="2.6" fill="none" stroke="currentColor"
+                      stroke-width="1.7" />
+                    <path d="M2.6 8.4h18.8" fill="none" stroke="currentColor" stroke-width="1.7" />
+                    <path d="M9.6 12.2 7.2 14.4l2.4 2.2M14.4 12.2l2.4 2.2-2.4 2.2" fill="none" stroke="currentColor"
+                      stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </span>
+                <span class="tarjeta__tituloBloque">
+                  <span class="tarjeta__titulo">Suite STEM integrada</span>
+                  <span class="tarjeta__sumario">VS Code, Python y LibreOffice preinstalados</span>
+                </span>
+                <span class="tarjeta__chevron" aria-hidden="true"></span>
+              </summary>
+              <div class="tarjeta__cuerpo">
+                <p>
+                  La imagen llega lista para dar clase el primer día: <strong>Visual Studio
+                  Code</strong> con extensiones del centro, <strong>Python</strong> con
+                  <code>numpy</code>, <code>pandas</code> y <code>matplotlib</code>, y
+                  <strong>LibreOffice</strong> configurado en español.
+                </p>
+                <p>
+                  Cuando una asignatura necesita otra herramienta, se añade una línea a la
+                  declaración y el laboratorio entero la recibe en la siguiente reconstrucción.
+                  El profesorado no depende de un ticket por equipo.
+                </p>
+                <ul class="lista-check lista-check--compacta">
+                  <li>Entornos por asignatura, aislados y reproducibles</li>
+                  <li>GeoGebra, Scratch y QGIS disponibles en el catálogo</li>
+                  <li>Mismas versiones en todas las aulas del centro</li>
+                </ul>
+              </div>
+            </details>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         TESTIMONIOS  (CSS Scroll Snapping)
+         ==================================================================== -->
+    <section class="seccion seccion--oscura testimonios" id="testimonios" aria-labelledby="testimonios-titulo">
+      <div class="contenedor">
+
+        <div class="seccion__encabezado">
+          <p class="eyebrow eyebrow--claro">Testimonios</p>
+          <h2 class="seccion__titulo" id="testimonios-titulo">Lo que cuentan los centros que ya migraron</h2>
+          <p class="seccion__entradilla seccion__entradilla--clara">
+            Desliza en horizontal o usa las flechas del teclado sobre el carril.
+          </p>
+        </div>
+
+        <div class="carril" tabindex="0" role="group" aria-label="Carrusel de testimonios; desplázate en horizontal">
+          <figure class="resena" id="resena-1">
+            <blockquote class="resena__cita">
+              <p>
+                Migramos cuarenta y dos equipos en una tarde. Calamares hizo el particionado
+                guiado y el resto fue aplicar la misma declaración en todas las máquinas.
+                Antes dedicábamos los viernes a restaurar imágenes; ahora no restauramos nada.
+              </p>
+            </blockquote>
+            <figcaption class="resena__autor">
+              <span class="avatar" aria-hidden="true">MS</span>
+              <span>
+                <strong>Mariana Solís</strong>
+                <span class="resena__cargo">Coordinadora de TI · Colegio Técnico Valle Alto</span>
+              </span>
+            </figcaption>
+          </figure>
+
+          <figure class="resena" id="resena-2">
+            <blockquote class="resena__cita">
+              <p>
+                KDE Plasma 6 fue la sorpresa. Temía una semana de dudas y el alumnado se orientó
+                en diez minutos: la barra de tareas, el menú y los archivos están donde esperan.
+                Nadie preguntó por Windows después del segundo día.
+              </p>
+            </blockquote>
+            <figcaption class="resena__autor">
+              <span class="avatar" aria-hidden="true">RA</span>
+              <span>
+                <strong>Rubén Aguilar</strong>
+                <span class="resena__cargo">Docente de Informática · Escuela Secundaria N.º 12</span>
+              </span>
+            </figcaption>
+          </figure>
+
+          <figure class="resena" id="resena-3">
+            <blockquote class="resena__cita">
+              <p>
+                Que la sesión viva en RAM resolvió un problema que arrastrábamos desde años:
+                las contraseñas olvidadas en el navegador del aula. Al reiniciar, el equipo no
+                recuerda nada. Cumplimiento y tranquilidad en la misma decisión técnica.
+              </p>
+            </blockquote>
+            <figcaption class="resena__autor">
+              <span class="avatar" aria-hidden="true">CF</span>
+              <span>
+                <strong>Claudia Ferreiro</strong>
+                <span class="resena__cargo">Directora de Tecnología · Instituto Politécnico Norte</span>
+              </span>
+            </figcaption>
+          </figure>
+
+          <figure class="resena" id="resena-4">
+            <blockquote class="resena__cita">
+              <p>
+                Doy Física y necesito Python con las mismas bibliotecas en los treinta puestos.
+                Pedí una línea en la configuración y al lunes siguiente estaba en todos.
+                Las prácticas por fin dan el mismo resultado en cualquier equipo.
+              </p>
+            </blockquote>
+            <figcaption class="resena__autor">
+              <span class="avatar" aria-hidden="true">IR</span>
+              <span>
+                <strong>Iván Restrepo</strong>
+                <span class="resena__cargo">Docente de Física · Liceo Bicentenario Andes</span>
+              </span>
+            </figcaption>
+          </figure>
+        </div>
+
+        <nav class="puntos" aria-label="Ir a un testimonio concreto">
+          <a class="puntos__punto" href="#resena-1"><span class="solo-lectores">Testimonio 1</span></a>
+          <a class="puntos__punto" href="#resena-2"><span class="solo-lectores">Testimonio 2</span></a>
+          <a class="puntos__punto" href="#resena-3"><span class="solo-lectores">Testimonio 3</span></a>
+          <a class="puntos__punto" href="#resena-4"><span class="solo-lectores">Testimonio 4</span></a>
+        </nav>
+
+        <p class="nota-ficticia">
+          Testimonios ficticios, escritos únicamente para demostrar este prototipo.
+        </p>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         CONTACTO
+         El envío no llega a ningún servidor: action="#contacto-gracias"
+         cambia el fragmento y :target revela la alerta simulada.
+         ==================================================================== -->
+    <section class="seccion contacto" id="contacto" aria-labelledby="contacto-titulo">
+      <div class="contenedor contacto__reja">
+
+        <div class="contacto__intro">
+          <p class="eyebrow">Contacto</p>
+          <h2 class="seccion__titulo" id="contacto-titulo">Hablemos de tu laboratorio</h2>
+          <p class="parrafo">
+            Cuéntanos cuántos equipos tiene el centro, qué software exige el currículo y en qué
+            plazo necesitas la migración. Te devolvemos una declaración de ejemplo adaptada al aula.
+          </p>
+          <ul class="contacto__datos">
+            <li><strong>Comunidad</strong><span>Foro público y sala de chat del proyecto</span></li>
+            <li><strong>Despliegues</strong><span>Guías para 10, 50 y 200 equipos</span></li>
+            <li><strong>Respuesta</strong><span>Dos días hábiles en el canal de centros</span></li>
+          </ul>
+        </div>
+
+        <div class="contacto__panel">
+
+          <!-- Alerta de éxito simulada; oculta hasta que :target coincide -->
+          <div class="alerta-exito" id="contacto-gracias" role="status" tabindex="-1">
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
+              <circle cx="12" cy="12" r="9.2" fill="none" stroke="currentColor" stroke-width="1.8" />
+              <path d="M7.8 12.3l2.9 2.9 5.5-6" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            <div>
+              <strong>¡Mensaje recibido!</strong>
+              <p>
+                Confirmación <em>simulada</em>: sin JavaScript no hay envío real ni acuse del
+                servidor. Los datos permanecen en tu navegador, visibles en la barra de direcciones.
+              </p>
+            </div>
+            <a class="alerta-exito__cerrar" href="#contacto" aria-label="Cerrar el mensaje de confirmación">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+                <path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" />
+              </svg>
+            </a>
+          </div>
+
+          <form class="formulario" action="#contacto-gracias" method="get">
+            <p class="formulario__titulo">Solicitar información</p>
+
+            <div class="campo">
+              <label class="campo__etiqueta" for="nombre">
+                Nombre completo <span class="campo__req" aria-hidden="true">*</span>
+              </label>
+              <input class="campo__control" type="text" id="nombre" name="nombre" required aria-required="true"
+                aria-describedby="nombre-ayuda" autocomplete="name" minlength="3" maxlength="80"
+                placeholder="Mariana Solís">
+              <p class="campo__ayuda" id="nombre-ayuda">Nombre y apellidos de la persona de contacto.</p>
+            </div>
+
+            <div class="campo">
+              <label class="campo__etiqueta" for="correo">
+                Correo institucional <span class="campo__req" aria-hidden="true">*</span>
+              </label>
+              <input class="campo__control" type="email" id="correo" name="correo" required aria-required="true"
+                aria-describedby="correo-ayuda" autocomplete="email" placeholder="ti@centro.edu">
+              <p class="campo__ayuda" id="correo-ayuda">
+                Usa la cuenta del centro educativo; así podemos verificar la institución.
+              </p>
+            </div>
+
+            <div class="campo">
+              <label class="campo__etiqueta" for="mensaje">
+                Mensaje <span class="campo__req" aria-hidden="true">*</span>
+              </label>
+              <textarea class="campo__control campo__control--area" id="mensaje" name="mensaje" rows="5" required
+                aria-required="true" aria-describedby="mensaje-ayuda" minlength="20" maxlength="1000"
+                placeholder="Tenemos 3 laboratorios con 30 equipos y necesitamos Python y GeoGebra…"></textarea>
+              <p class="campo__ayuda" id="mensaje-ayuda">
+                Mínimo 20 caracteres. Indica número de equipos, hardware y plazo previsto.
+              </p>
+            </div>
+
+            <p class="formulario__nota">
+              <span class="campo__req" aria-hidden="true">*</span> Campos obligatorios. Este formulario
+              es una demostración: no se guarda ni se transmite ninguna información.
+            </p>
+
+            <button class="boton boton--primario boton--bloque" type="submit">Enviar solicitud</button>
+          </form>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ======================================================================
+       FOOTER
+       ====================================================================== -->
+  <footer class="pie seccion--oscura">
+    <div class="contenedor pie__reja">
+
+      <div class="pie__marca">
+        <a class="marca marca--pie" href="#inicio">
+          <svg class="marca__icono" viewBox="0 0 40 40" width="36" height="36" aria-hidden="true" focusable="false">
+            <path d="M20 1.5 36.5 8.4V21c0 8.9-7 14.7-16.5 17.5C10.5 35.7 3.5 29.9 3.5 21V8.4z" fill="#0284C7" />
+            <path d="M9 28.5 15.4 17.8a1 1 0 0 1 1.7 0l2.6 4.4 3.3-6.6a1 1 0 0 1 1.8 0L31 28.5z" fill="#F8FAFC" />
+          </svg>
+          <span class="marca__texto">Yeti&nbsp;Linux</span>
+        </a>
+        <p class="pie__lema">
+          Sistema operativo educativo inmutable basado en NixOS y KDE Plasma&nbsp;6,
+          pensado para sustituir Windows Education en el laboratorio escolar.
+        </p>
+      </div>
+
+      <nav class="pie__columna" aria-label="Navegación del pie de página">
+        <h2 class="pie__titulo">Navegación</h2>
+        <ul class="pie__lista">
+          <li><a href="#inicio">Inicio</a></li>
+          <li><a href="#sobre">Sobre nosotros</a></li>
+          <li><a href="#servicios">Servicios</a></li>
+          <li><a href="#testimonios">Testimonios</a></li>
+          <li><a href="#contacto">Contacto</a></li>
+          <li><a href="#descargar">Descargar la beta</a></li>
+        </ul>
+      </nav>
+
+      <div class="pie__columna">
+        <h2 class="pie__titulo">Comunidad</h2>
+        <ul class="pie__lista">
+          <li>
+            <a href="https://github.com" target="_blank" rel="noopener noreferrer">
+              GitHub<span class="solo-lectores"> (se abre en una pestaña nueva)</span>
+            </a>
+          </li>
+          <li>
+            <a href="https://nixos.org" target="_blank" rel="noopener noreferrer">
+              NixOS<span class="solo-lectores"> (se abre en una pestaña nueva)</span>
+            </a>
+          </li>
+          <li>
+            <a href="https://kde.org" target="_blank" rel="noopener noreferrer">
+              KDE<span class="solo-lectores"> (se abre en una pestaña nueva)</span>
+            </a>
+          </li>
+          <li>
+            <a href="https://calamares.io" target="_blank" rel="noopener noreferrer">
+              Calamares<span class="solo-lectores"> (se abre en una pestaña nueva)</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="pie__columna">
+        <h2 class="pie__titulo">Privacidad</h2>
+        <details class="pie__aviso">
+          <summary>Aviso simplificado</summary>
+          <p>
+            Este sitio es un prototipo estático: no usa cookies, no ejecuta JavaScript, no
+            incorpora analítica y no envía datos a ningún servidor. El formulario de contacto
+            no almacena nada; lo escrito sólo aparece en la dirección de tu propio navegador.
+            La única petición externa es la hoja de tipografías de Google Fonts.
+          </p>
+        </details>
+        <p class="pie__mini">Contenido y testimonios ficticios, con fines de demostración.</p>
+      </div>
+
+    </div>
+
+    <div class="contenedor pie__base">
+      <p>&copy; 2026 Proyecto Yeti Linux. Publicado bajo licencia libre.</p>
+      <p>Hecho con HTML y CSS. Cero JavaScript.</p>
+    </div>
+  </footer>
+
+</body>
+
+</html>
